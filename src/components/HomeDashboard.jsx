@@ -1,14 +1,16 @@
 import { useState } from 'react';
-import { Check, ChevronRight, Minus, Clock, Plus, Pencil, Trophy } from 'lucide-react';
+import { Check, ChevronRight, Minus, Clock, Plus, Pencil, Trophy, Calendar } from 'lucide-react';
+import { isGoogleConnected, createCalendarEvent, getGoogleCalendarUrl } from '../utils/googleCalendar';
 
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
 
-export default function HomeDashboard({ todayData, today, setAffirmation, addBullet, updateBulletStatus, deleteBullet, updateWin }) {
+export default function HomeDashboard({ todayData, today, setAffirmation, addBullet, updateBulletStatus, deleteBullet, updateWin, addBulletAlarm }) {
   const [editingAffirmation, setEditingAffirmation] = useState(false);
   const [affirmationDraft, setAffirmationDraft] = useState('');
   const [newBulletText, setNewBulletText] = useState('');
   const [newBulletTime, setNewBulletTime] = useState('');
   const [showAddBullet, setShowAddBullet] = useState(false);
+  const [calSyncing, setCalSyncing] = useState(null);
 
   const dateObj = new Date(today + 'T00:00:00');
   const dayStr = `${dateObj.getMonth() + 1}월 ${dateObj.getDate()}일 ${WEEKDAYS[dateObj.getDay()]}요일`;
@@ -25,10 +27,43 @@ export default function HomeDashboard({ todayData, today, setAffirmation, addBul
 
   const handleAddBullet = () => {
     if (!newBulletText.trim()) return;
-    addBullet(newBulletText.trim(), newBulletTime || null);
+    const bullet = addBullet(newBulletText.trim(), newBulletTime || null);
+    if (newBulletTime) {
+      addBulletAlarm(bullet);
+      autoSyncToCalendar(newBulletText.trim(), newBulletTime);
+    }
     setNewBulletText('');
     setNewBulletTime('');
     setShowAddBullet(false);
+  };
+
+  const autoSyncToCalendar = async (text, time) => {
+    if (isGoogleConnected()) {
+      try {
+        await createCalendarEvent(text, today, time);
+      } catch (err) {
+        console.log('캘린더 자동 동기화 실패:', err);
+      }
+    }
+  };
+
+  const handleCalendarAdd = async (bullet) => {
+    if (!bullet.time) return;
+
+    if (isGoogleConnected()) {
+      setCalSyncing(bullet.id);
+      try {
+        await createCalendarEvent(bullet.text, today, bullet.time);
+        setCalSyncing(null);
+      } catch {
+        // 실패 시 URL 폴백
+        window.open(getGoogleCalendarUrl(bullet.text, today, bullet.time), '_blank');
+        setCalSyncing(null);
+      }
+    } else {
+      // 구글 연결 안 되어 있으면 URL로 바로 열기
+      window.open(getGoogleCalendarUrl(bullet.text, today, bullet.time), '_blank');
+    }
   };
 
   const statusIcon = (status) => {
@@ -147,9 +182,22 @@ export default function HomeDashboard({ todayData, today, setAffirmation, addBul
                   {bullet.text}
                 </span>
                 {bullet.time && (
-                  <span className="text-xs text-primary bg-primary/10 px-2 py-0.5 rounded-full">
-                    {bullet.time}
-                  </span>
+                  <>
+                    <span className="text-xs text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                      {bullet.time}
+                    </span>
+                    <button
+                      className="shrink-0 w-6 h-6 flex items-center justify-center text-blue-500 hover:text-blue-700"
+                      onClick={() => handleCalendarAdd(bullet)}
+                      title="구글 캘린더에 추가"
+                    >
+                      {calSyncing === bullet.id ? (
+                        <span className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin inline-block" />
+                      ) : (
+                        <Calendar className="w-4 h-4" />
+                      )}
+                    </button>
+                  </>
                 )}
                 <button
                   className="shrink-0 w-6 h-6 flex items-center justify-center text-text-muted hover:text-danger"

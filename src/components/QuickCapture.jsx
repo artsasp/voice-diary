@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Mic, MicOff, Loader2, Send } from 'lucide-react';
 import { useSpeechRecognition } from '../hooks/useSpeechRecognition';
 import { classifyVoiceInput } from '../utils/claude';
+import { isGoogleConnected, createCalendarEvent } from '../utils/googleCalendar';
 
 const CATEGORY_LABELS = {
   bullet_with_time: { label: '할일 (시간 포함)', color: 'bg-purple-100 text-purple-800', icon: '⏰' },
@@ -10,7 +11,7 @@ const CATEGORY_LABELS = {
   win: { label: '3 Wins', color: 'bg-green-100 text-green-800', icon: '✨' },
 };
 
-export default function QuickCapture({ addBullet, addMindJunk, updateWin, todayData, addBulletAlarm }) {
+export default function QuickCapture({ addBullet, addMindJunk, updateWin, todayData, addBulletAlarm, today }) {
   const { isListening, transcript, error, startListening, stopListening, setTranscript } = useSpeechRecognition();
   const [classifyResult, setClassifyResult] = useState(null);
   const [isClassifying, setIsClassifying] = useState(false);
@@ -38,12 +39,22 @@ export default function QuickCapture({ addBullet, addMindJunk, updateWin, todayD
     }
   };
 
-  const saveResult = (result) => {
+  const saveResult = async (result) => {
     if (!result) return;
     switch (result.category) {
       case 'bullet_with_time': {
         const bullet = addBullet(result.text, result.time);
-        if (result.time) addBulletAlarm(bullet);
+        if (result.time) {
+          addBulletAlarm(bullet);
+          // 구글 캘린더 자동 동기화
+          if (isGoogleConnected()) {
+            try {
+              await createCalendarEvent(result.text, today, result.time);
+            } catch (err) {
+              console.log('캘린더 자동 동기화 실패:', err);
+            }
+          }
+        }
         break;
       }
       case 'bullet':
@@ -131,7 +142,7 @@ export default function QuickCapture({ addBullet, addMindJunk, updateWin, todayD
           </div>
           <p className="text-sm text-text">{classifyResult.text}</p>
           {classifyResult.time && (
-            <p className="text-xs text-primary mt-1">⏰ 알림: {classifyResult.time}</p>
+            <p className="text-xs text-primary mt-1">⏰ 알림: {classifyResult.time} {isGoogleConnected() && '📅 캘린더 동기화됨'}</p>
           )}
           <button
             className="mt-3 text-xs text-primary underline"

@@ -44,6 +44,7 @@ function App() {
             updateBulletStatus={store.updateBulletStatus}
             deleteBullet={store.deleteBullet}
             updateWin={store.updateWin}
+            addBulletAlarm={store.addBulletAlarm}
           />
         );
       case 'capture':
@@ -54,6 +55,7 @@ function App() {
             updateWin={store.updateWin}
             todayData={store.todayData}
             addBulletAlarm={store.addBulletAlarm}
+            today={store.today}
           />
         );
       case 'junk':
