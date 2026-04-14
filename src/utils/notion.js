@@ -1,9 +1,10 @@
-const NOTION_TOKEN = import.meta.env.VITE_NOTION_TOKEN;
-const NOTION_DB_ID = import.meta.env.VITE_NOTION_DATABASE_ID;
+import { getNotionToken, getNotionDbId } from './tokens';
 
 export async function syncToNotion(todayData, mindJunk, date) {
+  const NOTION_TOKEN = getNotionToken();
+  const NOTION_DB_ID = getNotionDbId();
   if (!NOTION_TOKEN || !NOTION_DB_ID) {
-    throw new Error('Notion API 설정이 필요합니다. .env 파일에 VITE_NOTION_TOKEN과 VITE_NOTION_DATABASE_ID를 설정해주세요.');
+    throw new Error('노션 토큰과 DB ID를 설정 탭에서 입력해주세요.');
   }
 
   const bullets = todayData.bullets || [];

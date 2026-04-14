@@ -1,6 +1,7 @@
-const CLAUDE_API_KEY = import.meta.env.VITE_CLAUDE_API_KEY;
+import { getClaudeKey } from './tokens';
 
 export async function classifyVoiceInput(text) {
+  const CLAUDE_API_KEY = getClaudeKey();
   if (!CLAUDE_API_KEY) {
     return fallbackClassify(text);
   }

@@ -1,4 +1,5 @@
-const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+import { getGoogleClientId } from './tokens';
+
 const SCOPES = 'https://www.googleapis.com/auth/calendar.events';
 const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest';
 
@@ -32,8 +33,13 @@ export function initTokenClient(onSuccess, onError) {
     onError?.('Google Identity Services가 로드되지 않았습니다.');
     return;
   }
+  const clientId = getGoogleClientId();
+  if (!clientId) {
+    onError?.('구글 Client ID를 설정 탭에서 입력해주세요.');
+    return;
+  }
   tokenClient = window.google.accounts.oauth2.initTokenClient({
-    client_id: CLIENT_ID,
+    client_id: clientId,
     scope: SCOPES,
     callback: (response) => {
       if (response.error) {

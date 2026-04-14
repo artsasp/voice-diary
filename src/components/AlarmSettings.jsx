@@ -6,6 +6,7 @@ import {
   initGapi, initTokenClient, requestGoogleAuth,
   isGoogleConnected, disconnectGoogle
 } from '../utils/googleCalendar';
+import TokenSettings from './TokenSettings';
 
 export default function AlarmSettings({
   alarms, bulletAlarms, updateAlarm, removeBulletAlarm,
@@ -81,8 +82,11 @@ export default function AlarmSettings({
   return (
     <div className="flex-1 overflow-y-auto px-4 pb-4">
       <div className="text-center pt-6 pb-4">
-        <h2 className="text-lg font-bold text-primary-dark">⚙️ 알림 설정</h2>
+        <h2 className="text-lg font-bold text-primary-dark">⚙️ 설정</h2>
       </div>
+
+      {/* 토큰 설정 */}
+      <TokenSettings />
 
       {/* 알림 권한 */}
       {notifPermission !== 'granted' && (
