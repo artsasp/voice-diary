@@ -18,11 +18,17 @@ export default function QuickCapture({ addBullet, addMindJunk, updateWin, todayD
   const [saved, setSaved] = useState(false);
   const [manualText, setManualText] = useState('');
 
-  const handleStop = async () => {
-    stopListening();
-    if (transcript.trim()) {
-      await classify(transcript.trim());
-    }
+  const handleStop = () => {
+    // 콜백으로 최종 텍스트 받아서 분류
+    stopListening(async (finalText) => {
+      const text = (finalText || transcript).trim();
+      if (text) {
+        await classify(text);
+      } else {
+        // 텍스트 없으면 안내
+        // (error는 hook에서 처리됨)
+      }
+    });
   };
 
   const classify = async (text) => {
