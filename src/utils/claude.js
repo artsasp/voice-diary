@@ -1,6 +1,14 @@
 import { getClaudeKey } from './tokens';
+import { classifyWithGemini, getGeminiKey } from './gemini';
 
 export async function classifyVoiceInput(text) {
+  // 1순위: Gemini (무료, 빠름)
+  if (getGeminiKey()) {
+    const result = await classifyWithGemini(text);
+    if (result) return result;
+  }
+
+  // 2순위: Claude
   const CLAUDE_API_KEY = getClaudeKey();
   if (!CLAUDE_API_KEY) {
     return fallbackClassify(text);

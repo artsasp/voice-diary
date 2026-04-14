@@ -32,11 +32,18 @@ export default function TokenSettings() {
 
   const fields = [
     {
+      key: 'geminiKey',
+      label: 'Gemini API 키 (무료 추천)',
+      placeholder: 'AIzaSy...',
+      help: 'https://aistudio.google.com/apikey',
+      desc: '🆓 무료 AI 분류 - 1순위로 사용',
+    },
+    {
       key: 'claudeKey',
       label: 'Claude API 키',
       placeholder: 'sk-ant-api03-...',
       help: 'https://console.anthropic.com',
-      desc: 'AI 자동 분류 기능 (선택)',
+      desc: 'AI 자동 분류 (Gemini 없을 때 사용)',
     },
     {
       key: 'notionToken',
@@ -74,7 +81,7 @@ export default function TokenSettings() {
           <h3 className="text-sm font-bold text-text">내 API 토큰 설정</h3>
           {configuredCount > 0 && (
             <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-semibold">
-              {configuredCount}/4 등록됨
+              {configuredCount}/5 등록됨
             </span>
           )}
         </div>
